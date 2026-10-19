@@ -1,0 +1,5 @@
+# UCD Expense Desk - JavaScript module support on Apache-compatible hosts.
+# Remove this file if your host does not permit per-directory MIME settings.
+<IfModule mod_mime.c>
+  AddType application/javascript .mjs
+</IfModule>
