@@ -1,38 +1,77 @@
-UCD EXPENSE DESK v1.1 - GITHUB PAGES UPDATE
+UCD EXPENSE DESK v1.2 - WEBSITE UPDATE
 
-WHAT CAUSED THE ERRORS
-The published site returned 404 Not Found for the OCR engine, OCR worker,
-English language data and PDF modules. These are needed for reading image/scanned
-receipts and rendering PDF previews. The earlier version also blocked
-confirmation whenever automatic reading recorded an error.
+All files needed to run this static web tool are included. No server database,
+paid OCR subscription, or API key is required. Keep the complete assets folder.
 
-WHAT CHANGED
-- Complete bundled OCR and PDF assets, with clearer loading errors and retries.
-- Standard .js module filenames and project-relative asset paths.
-- Partial or complete manual entry can be saved even if reading fails.
-- A complete, manually checked expense can be confirmed and exported while
-  retaining its reading-error note and original receipt.
-- Stop reading; enter manually cancels automatic reading when it takes too long.
-- Improved total selection, decimal formats, date prioritization and merchant
-  extraction from pasted emails. Suggested tips and tax totals are not treated
-  as the final amount paid. Currency ambiguity still needs your review.
-- Difficult images get a second OCR pass with improved contrast. Native PDF
-  text is preferred; scanned pages use OCR. Available text from other attachments
-  is kept if one file cannot be read.
-- Read receipt again preserves corrections rather than replacing them blindly.
-- Native browser PDF preview is available if the enhanced preview cannot load.
-- Defaults & settings > Check receipt tools > Check files lists missing files.
-- Existing version 1 browser storage and backup files remain compatible.
+NEW IN v1.2
 
-UPDATE YOUR EXISTING GITHUB PAGES SITE
-1. On your current tool, use Save backup first if available. Keep this backup
-   on your computer. Do not clear browser data, or upload receipt backups to GitHub.
+1. RECEIPT IMAGE EDITOR
+Open an expense with a JPG, PNG or WEBP attachment, then choose Rotate / mark up.
+Rotate left or right in 90-degree steps; draw, outline, highlight or add a text
+label. Use Undo, Redo or Reset edits as needed. Save image edits persists the
+edited copy and returns the expense to review. Cancel discards pending image
+changes. Reopen the editor to revise or reset saved edits.
 
-2. Extract this ZIP ON YOUR COMPUTER. Upload the extracted FILES AND FOLDERS
-   into the same repository folder that currently contains index.html.
-   For your current site this is the folder serving Expense-Desk-Tool.
+The receipt PDF uses the edited copy. Original downloads the original file.
+Backups retain original bytes, edited PNGs and reversible editing instructions.
+Markup is not secure redaction: originals remain available in browser storage
+and backups. The image editor does not edit native PDF pages or text receipts.
+Large photos are reduced to at most 3500 pixels on their longest edge when
+saved as edited copies. Review small print before submitting.
 
-   The structure must be:
+2. SAVED MERCHANT DEFAULTS
+From an expense, complete the usual fields and choose Save merchant defaults.
+Choose which selections to reuse: category, justification, expense code,
+subcategory and cost centre; currency and itemized status are optional.
+Add exact alternate receipt names, one per line, if needed. Matching ignores
+capitalization and repeated whitespace; it does not guess similar names.
+
+Newly read matching receipts receive these defaults automatically. The optional
+"Also apply" checkbox updates all matching included, finished-reading expenses
+in the current report, replacing only the selected fields and returning matches
+to review. Excluded and still-processing expenses are skipped. Use saved defaults
+can also apply them to an individual receipt after a manual merchant correction.
+
+Dates, amounts, exchange rates, USD card charges and confirmation are never
+copied as merchant defaults. Changing a saved currency clears any previous
+conversion on affected records. Every receipt still needs review. Individual
+corrections can be customized; reading again preserves those corrections.
+Manage saved merchants in Defaults & settings; Forget leaves expense values
+unchanged. Up to 200 merchants and 20 alternate names each are supported.
+
+3. CLEAR ALL / NEW REPORT
+The top button opens a confirmation showing expense, receipt and image-edit
+counts and what will be removed from this browser. Cancel keeps the workspace.
+Save backup first prepares a ZIP; check that it finished downloading before
+clearing. The final clear removes current expenses, receipt originals, image
+edits and report notes. Existing downloads and other devices are unaffected.
+
+Saved merchants and personal defaults are kept by default. Select either of the
+separate checkboxes to remove saved merchants or reset personal defaults too.
+A new report starts with the default report name and reset list/export filters.
+Automatic receipt reading is stopped if needed. Deletion is local and requires
+a saved backup to undo. Wait for the dialog to close before closing the tab.
+
+4. PRIVACY NOTICE
+The top intro now includes a short notice and expandable details about local
+processing/storage, browser/device access, shared website origins, website-owner
+and hosting visibility, optional exchange-rate requests, downloaded files,
+backups, data clearing and code changes by the host. Review this notice against
+your hosting setup if you add analytics or change how the tool handles data.
+This distributed version has no analytics or receipt-upload service.
+
+UPDATE YOUR EXISTING WEBSITE
+
+1. In your current tool, choose Save backup. Keep that ZIP on your computer and
+   check the download. Do not clear browser data or put receipt backups in the
+   GitHub repository. Website source and bundled generic assets may be public;
+   personal report backups should remain private.
+
+2. Extract this update ZIP on your computer. Replace the extracted FILES AND
+   FOLDERS in the same repository folder that currently contains index.html.
+   Do not upload only the ZIP: GitHub Pages will not extract it.
+
+   Required top-level files:
      index.html
      styles.css
      app.js
@@ -40,81 +79,77 @@ UPDATE YOUR EXISTING GITHUB PAGES SITE
      exports.js
      receipt-tools.js
      file-utils.js
+     image-render.js
+     image-editor.js
+     merchants.js
      .nojekyll
-     assets/
-       tesseract.min.js
-       worker.min.js
-       tesseract-core-lstm.wasm.js
-       eng.traineddata
-       pdf.min.js
-       pdf.worker.min.js
-       pdf-lib.min.js
-       jszip.min.js
-       expense-template.xlsx
-       codes.json
-       standard_fonts/...
-       license files...
+     assets/ (complete folder, including subfolders and license files)
 
-   Replace index.html and styles.css as well as uploading the new .js files.
-   Upload the ENTIRE assets folder and preserve its subfolders. Do not nest
-   these files inside an additional ucd-expense-desk folder if your existing
-   index.html is already at the repository root. Uploading this ZIP alone will
-   not extract it on GitHub Pages.
+   Upload all files, including the new image and merchant modules. Preserve the
+   exact assets paths. Do not add an extra parent folder around these files if
+   index.html is currently at the repository root. The bundled Excel template
+   and the earlier OCR/PDF dependency fixes are retained.
 
-3. Commit the changes and wait for your GitHub Pages deployment to complete.
-   If you use GitHub's web uploader, ensure every file in assets was included;
-   uploading only the top-level HTML/JavaScript files is insufficient.
+3. Commit your changes and wait for GitHub Pages deployment to finish. Open the
+   same tool URL and hard-refresh (Ctrl+Shift+R on Windows; Cmd+Shift+R on Mac).
+   The footer should say v1.2. Keep the same URL/browser profile to retain local
+   expenses and settings. Existing v1/v1.1 browser records and backups work in
+   this version. A v1.2 backup should be opened with v1.2 or later to preserve
+   image edits and merchant defaults.
 
-4. Open your existing tool URL and hard-refresh (Ctrl+Shift+R on Windows).
-   Check the footer says v1.1. Keep the same URL/browser profile to retain your
-   existing workspace. Old .mjs files may remain; the updated index does not use
-   them. Avoid browser-data clearing as a cache troubleshooting step.
+4. Open Defaults & settings > Check receipt tools > Check files. Every listed
+   asset should say Available. If a file is missing, upload it at the displayed
+   path, wait for deployment and check again. The new app modules must also be
+   uploaded; a missing module can prevent the app from starting.
 
-5. Open Defaults & settings, expand Check receipt tools and click Check files.
-   Every listed file should say Available. If one says MISSING, upload that file
-   at the exact displayed path, wait for deployment, and check again.
+5. Test with disposable receipts: rotate and mark up a photo, save/reopen it,
+   create a merchant rule and add another matching receipt. Confirm details and
+   download Excel + PDF together. Open the actual downloaded files and verify
+   image appearance, date order and matching item numbers. Save a backup, test
+   opening it, and check original/edited images and merchant defaults before
+   relying on it for a real report. Test Clear All using only disposable data.
 
-6. Open an expense carrying an earlier reading error. You can now edit fields
-   and choose Save changes. Once the required details are complete, check the
-   review confirmation box and choose Confirm expense. Reading errors are
-   retained for reference and do not block confirmation. You do not have to
-   delete or upload these receipts again. Read receipt again is optional.
+The same extracted files can be served from an HTTPS subfolder on other static
+hosts. .htaccess supplies JavaScript MIME types on compatible Apache servers;
+GitHub Pages ignores it. No additional install/build step is required.
 
-7. Test a photo, a scanned PDF and a normal text PDF. Check the date, merchant,
-   currency and final total. Export the matching Excel and PDF after review.
+EXISTING RECEIPT READING AND EXPORT BEHAVIOR
 
-If you move to a different domain or browser, choose Open backup to restore
-your downloaded report backup. Backups replace the current workspace after
-confirmation. Receipt data is still stored locally in your browser, not GitHub.
+OCR remains a suggestion and cannot guarantee correct details. Missing totals,
+ambiguous currencies and dates need human review. Manual changes can be saved
+when automatic reading fails; complete manually reviewed expenses can still be
+confirmed with the reading note retained. Use Stop reading; enter manually if
+needed. Native PDF preview has a browser fallback; Read receipt again preserves
+manual corrections. The complete OCR and PDF assets from v1.1 are included.
 
-READING AND EXPORT LIMITS
-OCR still requires human review. A dollar sign alone does not determine whether
-a receipt is USD, CAD or another dollar currency. The tool does not invent a
-missing total or silently confirm a suggestion. It does not split several
-different expenses inside a single PDF; split those into separate files first.
+Review/Ready to Copy worksheets and the combined receipt PDF remain sorted by
+expense date, oldest first. Undated records appear last in review and need a
+date for matching PDF export. Re-export both files after changing an expense or
+image. The final UCD template has 50 expense rows; split larger submissions.
+The tool does not split different expenses inside one PDF. Encrypted/damaged
+PDFs must be replaced/unlocked before they can be included in a receipt PDF.
+Limits remain 500 expenses, 25 MB per attachment/edited image, and 250 MB per
+report including both originals and edited copies. Browser storage capacity
+also varies; watch the save status and retain your backups.
 
-A reading failure and a damaged original file are different. A valid original
-receipt can be combined into the PDF even when its text could not be read. If
-an original PDF is encrypted or corrupted, you can save the expense and export
-Excel, but you must replace/unlock that file before a matching PDF can be made.
-The PDF export reports the problem rather than silently leaving out a receipt.
+VALIDATION FOR THIS RELEASE
 
-File/report limits and your 50-row final UCD form are unchanged. Review and copy
-tabs remain date-sorted, and PDF item numbers match Ready to Copy. Re-export
-Excel and PDF together after edits.
+Automated checks covered merchant normalization/aliases, restricted reusable
+fields, custom override preservation, currency conversion invalidation, rotation
+coordinates, image rendering, edited-PNG embedding in the receipt PDF, matching
+spreadsheet/PDF date order, and actual backup generation with original bytes,
+edited images, edit state and merchant defaults preserved.
 
-TESTING COMPLETED
-Browser tests covered photo OCR, scanned-PDF OCR, two-page PDF preview, native
-PDF preview fallback with a deliberately missing module, restoration of an old
-failed expense, saving manual edits, and manual confirmation with the old error
-still retained. Automated checks generated Excel and multipage PDF exports with
-a manually confirmed failed-reading record and checked parsing/selection rules.
-The browser download event could not be captured in the test environment;
-verify actual downloaded files on your hosting account. The completed export
-was reported by the application, and its generation functions passed checks.
+Browser tests covered an old backup with a reading error, image rotation,
+annotations and undo/redo, saving edited receipts, applying merchant defaults
+across existing receipts, automatic alias matching on new receipts, preserving
+individual justifications on re-reading, local photo OCR with defaults in a new
+report, canceling/confirming clear, keeping or resetting merchants/settings,
+persistence after the completed reset, restoration of a v1.2 backup with editable
+images/defaults, manual confirmation after image editing with an old reading
+error retained, and matching Excel/PDF ZIP generation in the browser.
 
-OTHER WEB HOSTS
-The same extracted files work in an HTTPS subfolder on ordinary static hosting.
-No server database or paid receipt-reading service is required. The optional
-.htaccess supplies JavaScript MIME types on compatible Apache hosts. GitHub
-Pages ignores .htaccess; .nojekyll is included for straightforward static serving.
+The browser automation environment did not expose a download event for its
+backup link, although the app completed ZIP generation and the same backup
+function passed byte-level checks. Verify the actual downloads on your deployed
+website as described above.

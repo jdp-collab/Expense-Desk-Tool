@@ -1,4 +1,4 @@
-import {sorted,exportRows,usdAmount,parseAmount,excelSerial,dateDisplay,cleanText,validDate,issuesFor} from './core.js?v=1.1.0';
+import {sorted,exportRows,usdAmount,parseAmount,excelSerial,dateDisplay,cleanText,validDate,issuesFor} from './core.js?v=1.2.0';
 const xmlEscape=v=>cleanText(v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&apos;');
 const colName=i=>{let out='';for(i++;i;i=Math.floor((i-1)/26))out=String.fromCharCode(65+(i-1)%26)+out;return out;};
 export function replaceCells(xml,entries){
@@ -37,7 +37,7 @@ export async function buildExcel(rows,settings,scope,templateBytes,batch){
  sortedRows.forEach((r,i)=>{
   const n=i+8;
   const readingNote=r.error?`${r.manualEntry?'Manually reviewed. ':''}Reading note: ${r.error}`:'';
-  const values=[...reportValues(r,numbers.get(r.id)||null),r.status,[...(r.status==='Confirmed'?[]:r.extracted?.issues||[]),...issuesFor(r),...(readingNote?[readingNote]:[])].join(' '),r.files.map(f=>f.name).join('; '),r.extracted?.merchant||'',r.extracted?.date||'',r.extracted?.amount??null,r.extracted?.currency||'',r.category,parseAmount(r.rate),excelSerial(r.rateDate),parseAmount(r.amount),parseAmount(r.cardUSD),r.rateSource||'',r.notes||'',r.text||'',r.id,batch];
+  const values=[...reportValues(r,numbers.get(r.id)||null),r.status,[...(r.status==='Confirmed'?[]:r.extracted?.issues||[]),...issuesFor(r),...(readingNote?[readingNote]:[])].join(' '),r.files.map(f=>f.name+(f.editedData?' [edited image]':'')).join('; '),r.extracted?.merchant||'',r.extracted?.date||'',r.extracted?.amount??null,r.extracted?.currency||'',r.category,parseAmount(r.rate),excelSerial(r.rateDate),parseAmount(r.amount),parseAmount(r.cardUSD),r.rateSource||'',r.notes||'',r.text||'',r.id,batch];
   values.forEach((v,j)=>reviewEdits.push([`${colName(j)}${n}`,v,j===8&&usdAmount(r)!==null?`IF(V${n}="","",IF(W${n}<>"",W${n},IF(J${n}="USD",V${n},IF(ISNUMBER(T${n}),ROUND(V${n}*T${n},2),""))))`:null]));
  });
  // Remove unused pre-authored calculation rows; keep all original template formats.
@@ -77,7 +77,8 @@ export async function buildPdf(rows,settings,scope,batch,progress=()=>{}){
  for(let i=0;i<selected.length;i++){
   const r=selected[i];progress(`Preparing receipt ${i+1} of ${selected.length}`);
   for(const file of r.files){
-   const bytes=new Uint8Array(file.data);
+   const edited=!!file.editedData&&file.type.startsWith('image/'),imageType=edited?'image/png':file.type;
+   const bytes=new Uint8Array(edited?file.editedData:file.data);
    if(file.type==='application/pdf'||/\.pdf$/i.test(file.name)){
     let source;try{source=await PDFDocument.load(bytes);}catch{throw new Error(`Cannot combine ${file.name}. Remove PDF encryption or replace the file.`);}
     const pages=await doc.embedPdf(source,source.getPageIndices());
@@ -92,11 +93,11 @@ export async function buildPdf(rows,settings,scope,batch,progress=()=>{}){
    }else if(file.type.startsWith('image/')){
     let imageBytes=bytes;
     // JPEG and PNG are embedded directly; web formats are normalized in the browser.
-    if(typeof document!=='undefined'||!/image\/(jpeg|png)/.test(file.type)){
+    if(typeof document!=='undefined'||!/image\/(jpeg|png)/.test(imageType)){
      if(typeof document==='undefined')throw new Error('Image conversion needs the browser.');
-     const bitmap=await createImageBitmap(new Blob([bytes],{type:file.type}),{imageOrientation:'from-image'});const canvas=document.createElement('canvas');const factor=Math.min(1,3500/Math.max(bitmap.width,bitmap.height));canvas.width=Math.round(bitmap.width*factor);canvas.height=Math.round(bitmap.height*factor);canvas.getContext('2d').drawImage(bitmap,0,0,canvas.width,canvas.height);bitmap.close();imageBytes=new Uint8Array(await (await new Promise(res=>canvas.toBlob(res,'image/png'))).arrayBuffer());canvas.width=0;canvas.height=0;
+     const bitmap=await createImageBitmap(new Blob([bytes],{type:imageType}),{imageOrientation:'from-image'});const canvas=document.createElement('canvas');const factor=Math.min(1,3500/Math.max(bitmap.width,bitmap.height));canvas.width=Math.round(bitmap.width*factor);canvas.height=Math.round(bitmap.height*factor);canvas.getContext('2d').drawImage(bitmap,0,0,canvas.width,canvas.height);bitmap.close();imageBytes=new Uint8Array(await (await new Promise(res=>canvas.toBlob(res,'image/png'))).arrayBuffer());canvas.width=0;canvas.height=0;
     }
-    let image;try{image=file.type==='image/jpeg'&&typeof document==='undefined'?await doc.embedJpg(imageBytes):await doc.embedPng(imageBytes);}catch{throw new Error(`Cannot combine ${file.name}. Try saving it as a JPEG or PNG.`);}
+    let image;try{image=imageType==='image/jpeg'&&typeof document==='undefined'?await doc.embedJpg(imageBytes):await doc.embedPng(imageBytes);}catch{throw new Error(`Cannot combine ${file.name}. Try saving it as a JPEG or PNG.`);}
     const page=doc.addPage(paper),scale=Math.min((paper[0]-52)/image.width,(paper[1]-110)/image.height);
     page.drawImage(image,{x:(paper[0]-image.width*scale)/2,y:34+(paper[1]-110-image.height*scale)/2,width:image.width*scale,height:image.height*scale});caption(page,r,i+1,1,1);
    }else{
@@ -108,3 +109,9 @@ export async function buildPdf(rows,settings,scope,batch,progress=()=>{}){
  return doc.save();
 }
 export function download(bytes,name,type){const blob=bytes instanceof Blob?bytes:new Blob([bytes],{type});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=name;document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),60000);}
+
+export async function buildBackup(rows,settings,merchantProfiles=[]){
+ const zip=new globalThis.JSZip(),manifest={version:1,appVersion:'1.2.0',settings,merchantProfiles,rows:[]};
+ for(let i=0;i<rows.length;i++){const row=rows[i],copy={...row,processing:false,files:[]};for(let j=0;j<row.files.length;j++){const file=row.files[j],path=`receipts/${i}/${j}`,editedPath=file.editedData?`receipts/${i}/${j}-edited.png`:undefined;zip.file(path,file.data);if(editedPath)zip.file(editedPath,file.editedData);copy.files.push({...file,data:undefined,editedData:undefined,path,editedPath});}manifest.rows.push(copy);}
+ zip.file('report.json',JSON.stringify(manifest));return zip.generateAsync({type:'uint8array',compression:'DEFLATE'});
+}
