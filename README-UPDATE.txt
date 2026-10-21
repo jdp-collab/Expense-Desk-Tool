@@ -1,9 +1,71 @@
-UCD EXPENSE DESK v1.2 - WEBSITE UPDATE
+UCD EXPENSE DESK v1.3 - WEBSITE UPDATE
 
 All files needed to run this static web tool are included. No server database,
 paid OCR subscription, or API key is required. Keep the complete assets folder.
 
-NEW IN v1.2
+NEW IN v1.3
+
+1. AUTOMATIC ITEMIZED-RECEIPT DEFAULT
+Newly uploaded receipts, pasted email receipts, and receipts attached later
+start with Itemized receipt = Yes. This is an editable default; choose No if
+the document is not itemized. Explicit saved merchant preferences still apply.
+Existing attached receipts whose itemized field was blank also default to Yes
+when loaded or restored. An existing explicit No is kept for your review.
+
+2. ADD AN EXPENSE WITHOUT A RECEIPT
+Choose Add expense without receipt beside the upload and paste controls.
+Enter the date, merchant, business purpose, amount, currency, expense code and
+other usual fields. No attachment is required to save or confirm the expense.
+Itemized receipt is set to No while there are no attachments.
+
+Business Justification displays an emphasized missing-receipt reminder.
+Explain why the itemized receipt is unavailable in the separate explanation
+box below it. That explanation is required for confirmation, including when an
+attached document is marked No. You can save an incomplete draft at any time.
+A general category reason such as Meal during recruitment travel does not
+replace the explanation of why the receipt is unavailable.
+
+The explanation is appended to Business Justification in Expense Review and
+Ready to Copy, so it will also be copied into your final report. The PDF includes
+a clearly labeled missing-receipt explanation page at the matching item number.
+For an attached, non-itemized document, an explanation page precedes that
+expense's attachments. These pages are user-entered statements, not receipts
+or approval of reimbursement. Date sorting, matching item numbers and totals
+continue to work. Long explanations continue on additional pages as needed.
+
+If you find the receipt later, open the expense and choose Attach a receipt.
+Uploading it defaults the itemized field to Yes and returns the expense to
+review. The earlier explanation is retained locally but omitted from the
+exported justification when an itemized receipt is available. Removing the
+last attachment changes the field to No and restores the explanation prompt.
+Receipt explanations are specific to each expense, never merchant defaults.
+
+BACKUPS AND UPGRADING
+Save a backup before replacing website files. Keep the same URL/browser
+profile to retain your workspace; do not clear browser data. Older backups
+remain supported. Use v1.3 or later to restore backups with missing-receipt
+explanations. Previously confirmed records marked No without an explanation
+return to review so you can complete the new required explanation.
+
+After replacing all extracted files and the complete assets folder on your
+website, hard-refresh and check the footer says v1.3. The upload instructions
+below still apply. No additional modules or server services are required.
+
+V1.3 VALIDATION
+Automated checks covered uploaded-receipt defaults, keeping an explicit No,
+preventing a no-file expense from claiming Yes, confirmation requirements,
+merchant-default safety, backup preservation, Excel justification/No values,
+PDF placeholder item order, non-itemized attachments and long explanations.
+The actual PDF text was parsed to check item order and complete explanations.
+Existing image-editing, merchant matching and matched-export checks also pass.
+
+Browser checks covered manual creation, saving an incomplete draft, blocked
+confirmation without an explanation, successful confirmation with one,
+persistence after reload, uploading a new receipt with Yes, adding a receipt
+later, switching to No, removing the last attachment, and matched Excel/PDF
+ZIP generation. Downloads should still be checked on your deployed website.
+
+RETAINED FROM v1.2
 
 1. RECEIPT IMAGE EDITOR
 Open an expense with a JPG, PNG or WEBP attachment, then choose Rotate / mark up.
@@ -92,7 +154,7 @@ UPDATE YOUR EXISTING WEBSITE
 
 3. Commit your changes and wait for GitHub Pages deployment to finish. Open the
    same tool URL and hard-refresh (Ctrl+Shift+R on Windows; Cmd+Shift+R on Mac).
-   The footer should say v1.2. Keep the same URL/browser profile to retain local
+   The footer should say v1.3. Keep the same URL/browser profile to retain local
    expenses and settings. Existing v1/v1.1 browser records and backups work in
    this version. A v1.2 backup should be opened with v1.2 or later to preserve
    image edits and merchant defaults.

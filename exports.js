@@ -1,4 +1,4 @@
-import {sorted,exportRows,usdAmount,parseAmount,excelSerial,dateDisplay,cleanText,validDate,issuesFor} from './core.js?v=1.2.0';
+import {sorted,exportRows,usdAmount,parseAmount,excelSerial,dateDisplay,cleanText,validDate,issuesFor,businessJustification,itemizedValue,needsReceiptReason} from './core.js?v=1.3.0';
 const xmlEscape=v=>cleanText(v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&apos;');
 const colName=i=>{let out='';for(i++;i;i=Math.floor((i-1)/26))out=String.fromCharCode(65+(i-1)%26)+out;return out;};
 export function replaceCells(xml,entries){
@@ -19,12 +19,12 @@ export function replaceCells(xml,entries){
  if(byAddress.size)throw new Error(`Template cells unavailable: ${[...byAddress.keys()].slice(0,5).join(', ')}`);
  return xml;
 }
-function reportValues(r,item,forFinal=false){const currency=forFinal?(r.currency==='USD'?'':r.currency==='CAD'?'CAN':r.currency):r.currency;return [item,excelSerial(r.date),r.merchant,r.description,r.code,r.subcategory,r.itemized,r.currency==='USD'?null:parseAmount(r.amount),usdAmount(r),currency,r.costCentre];}
+function reportValues(r,item,forFinal=false){const currency=forFinal?(r.currency==='USD'?'':r.currency==='CAD'?'CAN':r.currency):r.currency;return [item,excelSerial(r.date),r.merchant,businessJustification(r),r.code,r.subcategory,itemizedValue(r),r.currency==='USD'?null:parseAmount(r.amount),usdAmount(r),currency,r.costCentre];}
 export function validateExport(rows,scope,forPdf=false){
  const selected=exportRows(rows,scope);
  if(!selected.length)throw new Error(scope==='confirmed'?'Confirm at least one expense first.':'Add at least one included expense first.');
  if(rows.length>500)throw new Error('This version supports 500 expenses per report.');
- if(forPdf){const missing=selected.find(r=>!validDate(r.date)||!r.files?.length||r.processing);if(missing)throw new Error(`Check the date and receipt files for ${missing.merchant||'an expense'} before creating a matched PDF.`);}
+ if(forPdf){const missing=selected.find(r=>!validDate(r.date)||r.processing);if(missing)throw new Error(`Check the date and wait for processing to finish for ${missing.merchant||'an expense'} before creating a matched PDF.`);}
  return selected;
 }
 export async function buildExcel(rows,settings,scope,templateBytes,batch){
@@ -37,7 +37,7 @@ export async function buildExcel(rows,settings,scope,templateBytes,batch){
  sortedRows.forEach((r,i)=>{
   const n=i+8;
   const readingNote=r.error?`${r.manualEntry?'Manually reviewed. ':''}Reading note: ${r.error}`:'';
-  const values=[...reportValues(r,numbers.get(r.id)||null),r.status,[...(r.status==='Confirmed'?[]:r.extracted?.issues||[]),...issuesFor(r),...(readingNote?[readingNote]:[])].join(' '),r.files.map(f=>f.name+(f.editedData?' [edited image]':'')).join('; '),r.extracted?.merchant||'',r.extracted?.date||'',r.extracted?.amount??null,r.extracted?.currency||'',r.category,parseAmount(r.rate),excelSerial(r.rateDate),parseAmount(r.amount),parseAmount(r.cardUSD),r.rateSource||'',r.notes||'',r.text||'',r.id,batch];
+  const values=[...reportValues(r,numbers.get(r.id)||null),r.status,[...(r.status==='Confirmed'?[]:r.extracted?.issues||[]),...issuesFor(r),...(readingNote?[readingNote]:[]),...(!r.files.length?['No receipt attached; see the missing-receipt explanation in Business Justification.']:[])].join(' '),r.files.length?r.files.map(f=>f.name+(f.editedData?' [edited image]':'')).join('; '):'No receipt attached',r.extracted?.merchant||'',r.extracted?.date||'',r.extracted?.amount??null,r.extracted?.currency||'',r.category,parseAmount(r.rate),excelSerial(r.rateDate),parseAmount(r.amount),parseAmount(r.cardUSD),r.rateSource||'',r.notes||'',r.text||'',r.id,batch];
   values.forEach((v,j)=>reviewEdits.push([`${colName(j)}${n}`,v,j===8&&usdAmount(r)!==null?`IF(V${n}="","",IF(W${n}<>"",W${n},IF(J${n}="USD",V${n},IF(ISNUMBER(T${n}),ROUND(V${n}*T${n},2),""))))`:null]));
  });
  // Remove unused pre-authored calculation rows; keep all original template formats.
@@ -74,9 +74,16 @@ export async function buildPdf(rows,settings,scope,batch,progress=()=>{}){
   page.drawText(pdfText(r.description,100),{x:26,y:h-58,size:8,font,color:gray});
   page.drawText(`UCD Expense Desk  |  ${pdfText(batch)}  |  ${scope==='confirmed'?'Confirmed expenses':'All included expenses'}`,{x:26,y:15,size:7,font,color:gray});
  };
+ const missingReceiptPages=(r,item)=>{
+  const noReceipt=!r.files?.length,title=noReceipt?'NO RECEIPT ATTACHED':'ITEMIZED RECEIPT UNAVAILABLE';
+  const text=`${businessJustification(r)}\n\n${noReceipt?'No receipt was supplied for this expense.':'The attached document(s) have been marked as not itemized.'} This explanation was entered by the user. This page is not a receipt or approval of reimbursement.`;
+  const lines=wrap(text,paper[0]-60,font,10),perPage=55,count=Math.max(1,Math.ceil(lines.length/perPage));
+  for(let part=0;part<count;part++){const page=doc.addPage(paper);caption(page,r,item,part+1,count);page.drawText(title,{x:30,y:paper[1]-93,font:bold,size:12,color:navy});lines.slice(part*perPage,(part+1)*perPage).forEach((line,k)=>page.drawText(line,{x:30,y:paper[1]-122-k*12,font,size:10,color:navy}));}
+ };
  for(let i=0;i<selected.length;i++){
-  const r=selected[i];progress(`Preparing receipt ${i+1} of ${selected.length}`);
-  for(const file of r.files){
+  const r=selected[i];progress(`Preparing expense ${i+1} of ${selected.length}`);
+  if(needsReceiptReason(r))missingReceiptPages(r,i+1);
+  for(const file of r.files||[]){
    const edited=!!file.editedData&&file.type.startsWith('image/'),imageType=edited?'image/png':file.type;
    const bytes=new Uint8Array(edited?file.editedData:file.data);
    if(file.type==='application/pdf'||/\.pdf$/i.test(file.name)){
@@ -111,7 +118,7 @@ export async function buildPdf(rows,settings,scope,batch,progress=()=>{}){
 export function download(bytes,name,type){const blob=bytes instanceof Blob?bytes:new Blob([bytes],{type});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=name;document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),60000);}
 
 export async function buildBackup(rows,settings,merchantProfiles=[]){
- const zip=new globalThis.JSZip(),manifest={version:1,appVersion:'1.2.0',settings,merchantProfiles,rows:[]};
+ const zip=new globalThis.JSZip(),manifest={version:1,appVersion:'1.3.0',settings,merchantProfiles,rows:[]};
  for(let i=0;i<rows.length;i++){const row=rows[i],copy={...row,processing:false,files:[]};for(let j=0;j<row.files.length;j++){const file=row.files[j],path=`receipts/${i}/${j}`,editedPath=file.editedData?`receipts/${i}/${j}-edited.png`:undefined;zip.file(path,file.data);if(editedPath)zip.file(editedPath,file.editedData);copy.files.push({...file,data:undefined,editedData:undefined,path,editedPath});}manifest.rows.push(copy);}
  zip.file('report.json',JSON.stringify(manifest));return zip.generateAsync({type:'uint8array',compression:'DEFLATE'});
 }

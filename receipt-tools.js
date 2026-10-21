@@ -1,5 +1,5 @@
 // Dependencies are loaded from this module's directory, including project subfolders.
-export const BUILD='1.2.0';
+export const BUILD='1.3.0';
 export const assetURL=name=>new URL(`./assets/${name}`,import.meta.url).href;
 const pendingScripts=new Map();
 export async function loadScript(name,globalName){

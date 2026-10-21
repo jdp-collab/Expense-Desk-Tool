@@ -14,7 +14,7 @@ export function findProfile(name,profiles){const key=normalizeMerchant(name);ret
 export function applyProfile(row,profile,{force=false}={}){
  if(!profile)return [];const beforeCurrency=row.currency,prior=row.merchantDefaults?.profileId===profile.id?row.merchantDefaults.applied:null,changed=[];
  const applied={...prior};for(const [key,value] of Object.entries(profile.fields)){
-  if(!Object.hasOwn(PROFILE_FIELDS,key))continue;
+  if(!Object.hasOwn(PROFILE_FIELDS,key)||(key==='itemized'&&row.files?.length===0))continue;
   if(force||!row[key]||(prior&&Object.hasOwn(prior,key)&&String(row[key])===String(prior[key]))){if(row[key]!==value){row[key]=value;changed.push(key);}applied[key]=value;}
  }
  row.merchantDefaults={profileId:profile.id,revision:profile.revision,applied};
