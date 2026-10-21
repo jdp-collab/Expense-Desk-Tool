@@ -1,4 +1,4 @@
-import {normalizeEditState,canvasPoint,paintImage,encodeCanvas,hasImageEdits} from './image-render.js?v=1.3.0';
+import {normalizeEditState,canvasPoint,paintImage,encodeCanvas,hasImageEdits} from './image-render.js?v=1.4.0';
 export function createImageEditor({onSave,toast}){
  const $=id=>document.getElementById(id),dialog=$('image-editor-dialog'),canvas=$('editor-canvas');let bitmap=null,model=null,undo=[],redo=[],active=null,originalFile=null,saving=false;
  const clone=x=>structuredClone(x);

@@ -1,4 +1,4 @@
-import {sorted,exportRows,usdAmount,parseAmount,excelSerial,dateDisplay,cleanText,validDate,issuesFor,businessJustification,itemizedValue,needsReceiptReason} from './core.js?v=1.3.0';
+import {sorted,exportRows,usdAmount,parseAmount,excelSerial,dateDisplay,cleanText,validDate,issuesFor,businessJustification,itemizedValue,needsReceiptReason} from './core.js?v=1.4.0';
 const xmlEscape=v=>cleanText(v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&apos;');
 const colName=i=>{let out='';for(i++;i;i=Math.floor((i-1)/26))out=String.fromCharCode(65+(i-1)%26)+out;return out;};
 export function replaceCells(xml,entries){
@@ -118,7 +118,7 @@ export async function buildPdf(rows,settings,scope,batch,progress=()=>{}){
 export function download(bytes,name,type){const blob=bytes instanceof Blob?bytes:new Blob([bytes],{type});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=name;document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),60000);}
 
 export async function buildBackup(rows,settings,merchantProfiles=[]){
- const zip=new globalThis.JSZip(),manifest={version:1,appVersion:'1.3.0',settings,merchantProfiles,rows:[]};
+ const zip=new globalThis.JSZip(),manifest={version:1,appVersion:'1.4.0',settings,merchantProfiles,rows:[]};
  for(let i=0;i<rows.length;i++){const row=rows[i],copy={...row,processing:false,files:[]};for(let j=0;j<row.files.length;j++){const file=row.files[j],path=`receipts/${i}/${j}`,editedPath=file.editedData?`receipts/${i}/${j}-edited.png`:undefined;zip.file(path,file.data);if(editedPath)zip.file(editedPath,file.editedData);copy.files.push({...file,data:undefined,editedData:undefined,path,editedPath});}manifest.rows.push(copy);}
  zip.file('report.json',JSON.stringify(manifest));return zip.generateAsync({type:'uint8array',compression:'DEFLATE'});
 }

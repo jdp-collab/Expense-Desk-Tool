@@ -1,9 +1,38 @@
-UCD EXPENSE DESK v1.3 - WEBSITE UPDATE
+UCD EXPENSE DESK v1.4 - WEBSITE UPDATE
 
 All files needed to run this static web tool are included. No server database,
 paid OCR subscription, or API key is required. Keep the complete assets folder.
 
-NEW IN v1.3
+NEW IN v1.4
+
+The review form now has an optional Saved merchant dropdown above the editable
+Merchant field. Every saved merchant appears in alphabetical order, including
+merchants restored from backups or kept from previous reports.
+
+Choosing a merchant fills its name and saved selections immediately. You can
+customize any field before saving. Dates and amounts stay specific to the
+expense. Confirmation is reset for changed included expenses.
+
+The Merchant text box always accepts any new name, whether or not defaults
+exist. Choose Enter a new merchant to clear the merchant name and type a new
+one, or replace the name directly in the Merchant field. Save merchant defaults
+adds the new merchant to the dropdown immediately. The list follows the saved
+merchants in Defaults & settings. With no saved merchants, the text box works
+normally and the dropdown explains how to create your first saved merchant.
+
+Save a backup, replace the extracted website files, then hard-refresh and check
+that the footer says v1.4. Existing reports, saved merchants and backups work
+with this update. The complete assets folder is included.
+
+V1.4 VALIDATION
+Browser checks covered the empty saved list, unrestricted entry, saving two
+merchants and immediately seeing both in alphabetical order, selecting saved
+names/defaults, preserving the expense date/amount, entering and confirming an
+unlisted merchant, and reopening it after reload. Choosing a saved merchant
+from a confirmed expense returns it to review. Special characters in saved
+names were also checked.
+
+RETAINED FROM v1.3
 
 1. AUTOMATIC ITEMIZED-RECEIPT DEFAULT
 Newly uploaded receipts, pasted email receipts, and receipts attached later
@@ -48,7 +77,7 @@ explanations. Previously confirmed records marked No without an explanation
 return to review so you can complete the new required explanation.
 
 After replacing all extracted files and the complete assets folder on your
-website, hard-refresh and check the footer says v1.3. The upload instructions
+website, hard-refresh and check the footer says v1.4. The upload instructions
 below still apply. No additional modules or server services are required.
 
 V1.3 VALIDATION
@@ -154,7 +183,7 @@ UPDATE YOUR EXISTING WEBSITE
 
 3. Commit your changes and wait for GitHub Pages deployment to finish. Open the
    same tool URL and hard-refresh (Ctrl+Shift+R on Windows; Cmd+Shift+R on Mac).
-   The footer should say v1.3. Keep the same URL/browser profile to retain local
+   The footer should say v1.4. Keep the same URL/browser profile to retain local
    expenses and settings. Existing v1/v1.1 browser records and backups work in
    this version. A v1.2 backup should be opened with v1.2 or later to preserve
    image edits and merchant defaults.
