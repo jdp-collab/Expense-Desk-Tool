@@ -1,3 +1,4 @@
+import {normalizeSubcategory} from './core.js?v=1.5.0';
 export const PROFILE_FIELDS={category:'Category',description:'Business justification',code:'Expense code',subcategory:'Subcategory',costCentre:'Cost centre',currency:'Currency (optional)',itemized:'Itemized receipt? (optional)'};
 export const normalizeMerchant=name=>String(name??'').normalize('NFKC').toLowerCase().replace(/\s+/g,' ').trim();
 export function normalizeProfiles(input){
@@ -18,6 +19,7 @@ export function applyProfile(row,profile,{force=false}={}){
   if(force||!row[key]||(prior&&Object.hasOwn(prior,key)&&String(row[key])===String(prior[key]))){if(row[key]!==value){row[key]=value;changed.push(key);}applied[key]=value;}
  }
  row.merchantDefaults={profileId:profile.id,revision:profile.revision,applied};
+ if(normalizeSubcategory(row)&&!changed.includes('subcategory'))changed.push('subcategory');
  if(beforeCurrency!==row.currency){row.rate='';row.rateDate='';row.rateSource='';row.cardUSD='';}
  if(changed.length&&row.status==='Confirmed')row.status='Needs review';return changed;
 }

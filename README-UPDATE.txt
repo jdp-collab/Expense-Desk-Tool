@@ -1,9 +1,79 @@
-UCD EXPENSE DESK v1.4 - WEBSITE UPDATE
+UCD EXPENSE DESK v1.5 - WEBSITE UPDATE
 
 All files needed to run this static web tool are included. No server database,
 paid OCR subscription, or API key is required. Keep the complete assets folder.
 
-NEW IN v1.4
+NEW IN v1.5
+
+1. SUB-CATEGORY ONLY FOR THE TWO APPLICABLE EXPENSE CODES
+Sub-Category is required only for:
+  82202 Travel/Subsistance - Outside EU
+  83060 Recruitment Expenses - General
+
+For all other codes, the field is cleared and disabled. Existing stored records
+and restored backups are normalized to this rule. Merchant defaults obey the
+same rule, and both Expense Review and Ready to Copy export blank Sub-Category
+cells for other codes, even if older records contained a value. Changing from
+another code to either applicable code enables the field; choose a sub-category
+before confirming. Existing category/merchant suggestions can still fill it
+when appropriate. Previously confirmed records missing a required sub-category
+return to review.
+
+2. SMALLER RECEIPT IMAGES IN EXPORTED PDFs
+The export panel now has Receipt image quality in PDF:
+
+  Readable compression (recommended) is the default. Photo receipts and edited
+  image copies are resized conservatively, then encoded as a good-quality JPEG
+  or a lossless PNG, whichever is smaller. Color annotations are retained. Small
+  images are not enlarged. Tall receipts retain extra height to avoid squeezing
+  their text down to an unnecessarily narrow pixel width.
+
+  Maximum detail (larger file) keeps more image detail and uses lossless PNG
+  encoding. Use this if tiny print needs more detail. The selected quality is
+  saved with your browser settings and included in backups.
+
+Compression affects only the generated PDF. Original uploads, image-edit state
+and backup receipt bytes are retained. PDF attachments keep their existing
+text/vector content and embedded-image quality; their pages are not rasterized
+or recompressed. The compression options apply to uploaded JPG/PNG/WEBP image
+receipts and the flattened copies created by the image editor.
+
+Readable mode normally targets a 2600-pixel longest edge, with at least a
+1400-pixel short edge where the source allows. Very tall receipts can retain
+more height. Image processing has pixel/dimension limits to bound browser
+memory use; Maximum detail also has a ceiling for exceptionally large images.
+
+Savings vary by source, so inspect small print in your actual exported PDF.
+In a synthetic receipt-photo test, the PDF dropped from 6.6 MB in Maximum detail
+to 0.56 MB in Readable compression (91% smaller); the total, item text and small
+print remained legible in rendered comparisons. This is a sample, not a fixed
+reduction promised for every receipt.
+
+UPDATE YOUR WEBSITE
+Save a report backup. Extract and replace ALL website files, including the new
+pdf-images.js module and the complete assets folder. Hard-refresh and check
+that the footer says v1.5. Keep the same URL/browser profile to retain local
+reports and saved merchants. Do not clear browser data as an upgrade step.
+
+V1.5 VALIDATION
+Automated checks covered both applicable codes, other codes, confirmation
+requirements, clearing values from merchant defaults, old/stale values being
+blank in both spreadsheet export tabs, compression dimensions and file sizes,
+lossless fallback for simple images, tall/small-image handling, edited copies,
+source-byte preservation, and the existing receipt/merchant/backup flows.
+Actual Excel files were reopened to check blank cells. Both PDF quality modes
+were rendered and checked for legibility, complete receipt content, annotations,
+headers and footers.
+
+Browser checks covered an old value in a restored record, both required-code
+validation cases, switching to another code, confirming with a blank disabled
+field for that other code, selecting a saved merchant, saving/reloading the PDF
+quality preference, and photo-PDF/combined ZIP generation. The automation
+browser did not expose a completed download event, so verify the downloaded
+files on your deployed website; the same export functions passed file-level
+checks and their generated outputs were inspected.
+
+RETAINED FROM v1.4
 
 The review form now has an optional Saved merchant dropdown above the editable
 Merchant field. Every saved merchant appears in alphabetical order, including
@@ -21,7 +91,7 @@ merchants in Defaults & settings. With no saved merchants, the text box works
 normally and the dropdown explains how to create your first saved merchant.
 
 Save a backup, replace the extracted website files, then hard-refresh and check
-that the footer says v1.4. Existing reports, saved merchants and backups work
+that the footer says v1.5. Existing reports, saved merchants and backups work
 with this update. The complete assets folder is included.
 
 V1.4 VALIDATION
@@ -77,7 +147,7 @@ explanations. Previously confirmed records marked No without an explanation
 return to review so you can complete the new required explanation.
 
 After replacing all extracted files and the complete assets folder on your
-website, hard-refresh and check the footer says v1.4. The upload instructions
+website, hard-refresh and check the footer says v1.5. The upload instructions
 below still apply. No additional modules or server services are required.
 
 V1.3 VALIDATION
@@ -168,6 +238,7 @@ UPDATE YOUR EXISTING WEBSITE
      app.js
      core.js
      exports.js
+     pdf-images.js
      receipt-tools.js
      file-utils.js
      image-render.js
@@ -183,7 +254,7 @@ UPDATE YOUR EXISTING WEBSITE
 
 3. Commit your changes and wait for GitHub Pages deployment to finish. Open the
    same tool URL and hard-refresh (Ctrl+Shift+R on Windows; Cmd+Shift+R on Mac).
-   The footer should say v1.4. Keep the same URL/browser profile to retain local
+   The footer should say v1.5. Keep the same URL/browser profile to retain local
    expenses and settings. Existing v1/v1.1 browser records and backups work in
    this version. A v1.2 backup should be opened with v1.2 or later to preserve
    image edits and merchant defaults.

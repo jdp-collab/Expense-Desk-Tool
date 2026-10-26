@@ -14,3 +14,6 @@
 
 /* v1.4: saved choices alongside unrestricted merchant entry */
 .merchant-picker{padding:12px 13px;margin:0 0 12px;border:1px solid #cbded7;border-radius:8px;background:#f4f8f6}.merchant-picker label{margin-bottom:6px!important;color:var(--teal)}.merchant-picker select{font-size:13px}.merchant-picker .settings-help{font-size:10px;line-height:1.65;margin-top:7px}@media(max-width:780px){.merchant-picker select{font-size:16px}}
+
+/* v1.5: export image quality */
+.export-panel .pdf-image-help{font-size:10px;line-height:1.7;color:var(--muted);margin:8px 0 16px}.export-panel #pdf-image-quality{width:100%;font-size:11px;padding:9px 8px;margin-bottom:0}

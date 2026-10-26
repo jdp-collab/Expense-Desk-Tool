@@ -1,4 +1,5 @@
-import {sorted,exportRows,usdAmount,parseAmount,excelSerial,dateDisplay,cleanText,validDate,issuesFor,businessJustification,itemizedValue,needsReceiptReason} from './core.js?v=1.4.0';
+import {preparePdfImage} from './pdf-images.js?v=1.5.0';
+import {sorted,exportRows,usdAmount,parseAmount,excelSerial,dateDisplay,cleanText,validDate,issuesFor,businessJustification,itemizedValue,needsReceiptReason,effectiveSubcategory} from './core.js?v=1.5.0';
 const xmlEscape=v=>cleanText(v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&apos;');
 const colName=i=>{let out='';for(i++;i;i=Math.floor((i-1)/26))out=String.fromCharCode(65+(i-1)%26)+out;return out;};
 export function replaceCells(xml,entries){
@@ -19,7 +20,7 @@ export function replaceCells(xml,entries){
  if(byAddress.size)throw new Error(`Template cells unavailable: ${[...byAddress.keys()].slice(0,5).join(', ')}`);
  return xml;
 }
-function reportValues(r,item,forFinal=false){const currency=forFinal?(r.currency==='USD'?'':r.currency==='CAD'?'CAN':r.currency):r.currency;return [item,excelSerial(r.date),r.merchant,businessJustification(r),r.code,r.subcategory,itemizedValue(r),r.currency==='USD'?null:parseAmount(r.amount),usdAmount(r),currency,r.costCentre];}
+function reportValues(r,item,forFinal=false){const currency=forFinal?(r.currency==='USD'?'':r.currency==='CAD'?'CAN':r.currency):r.currency;return [item,excelSerial(r.date),r.merchant,businessJustification(r),r.code,effectiveSubcategory(r),itemizedValue(r),r.currency==='USD'?null:parseAmount(r.amount),usdAmount(r),currency,r.costCentre];}
 export function validateExport(rows,scope,forPdf=false){
  const selected=exportRows(rows,scope);
  if(!selected.length)throw new Error(scope==='confirmed'?'Confirm at least one expense first.':'Add at least one included expense first.');
@@ -98,13 +99,7 @@ export async function buildPdf(rows,settings,scope,batch,progress=()=>{}){
      page.drawPage(embedded,{x,y,width:embedded.width*scale,height:embedded.height*scale,rotate:degrees(-rotation)});caption(page,r,i+1,j+1,pages.length);
     });
    }else if(file.type.startsWith('image/')){
-    let imageBytes=bytes;
-    // JPEG and PNG are embedded directly; web formats are normalized in the browser.
-    if(typeof document!=='undefined'||!/image\/(jpeg|png)/.test(imageType)){
-     if(typeof document==='undefined')throw new Error('Image conversion needs the browser.');
-     const bitmap=await createImageBitmap(new Blob([bytes],{type:imageType}),{imageOrientation:'from-image'});const canvas=document.createElement('canvas');const factor=Math.min(1,3500/Math.max(bitmap.width,bitmap.height));canvas.width=Math.round(bitmap.width*factor);canvas.height=Math.round(bitmap.height*factor);canvas.getContext('2d').drawImage(bitmap,0,0,canvas.width,canvas.height);bitmap.close();imageBytes=new Uint8Array(await (await new Promise(res=>canvas.toBlob(res,'image/png'))).arrayBuffer());canvas.width=0;canvas.height=0;
-    }
-    let image;try{image=imageType==='image/jpeg'&&typeof document==='undefined'?await doc.embedJpg(imageBytes):await doc.embedPng(imageBytes);}catch{throw new Error(`Cannot combine ${file.name}. Try saving it as a JPEG or PNG.`);}
+    let image;try{const prepared=await preparePdfImage(file,settings.pdfImageQuality);image=prepared.type==='image/jpeg'?await doc.embedJpg(prepared.bytes):await doc.embedPng(prepared.bytes);}catch(e){throw new Error(`Cannot combine ${file.name}: ${e.message||'Try saving it as a JPEG or PNG.'}`);}
     const page=doc.addPage(paper),scale=Math.min((paper[0]-52)/image.width,(paper[1]-110)/image.height);
     page.drawImage(image,{x:(paper[0]-image.width*scale)/2,y:34+(paper[1]-110-image.height*scale)/2,width:image.width*scale,height:image.height*scale});caption(page,r,i+1,1,1);
    }else{
@@ -118,7 +113,7 @@ export async function buildPdf(rows,settings,scope,batch,progress=()=>{}){
 export function download(bytes,name,type){const blob=bytes instanceof Blob?bytes:new Blob([bytes],{type});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=name;document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),60000);}
 
 export async function buildBackup(rows,settings,merchantProfiles=[]){
- const zip=new globalThis.JSZip(),manifest={version:1,appVersion:'1.4.0',settings,merchantProfiles,rows:[]};
+ const zip=new globalThis.JSZip(),manifest={version:1,appVersion:'1.5.0',settings,merchantProfiles,rows:[]};
  for(let i=0;i<rows.length;i++){const row=rows[i],copy={...row,processing:false,files:[]};for(let j=0;j<row.files.length;j++){const file=row.files[j],path=`receipts/${i}/${j}`,editedPath=file.editedData?`receipts/${i}/${j}-edited.png`:undefined;zip.file(path,file.data);if(editedPath)zip.file(editedPath,file.editedData);copy.files.push({...file,data:undefined,editedData:undefined,path,editedPath});}manifest.rows.push(copy);}
  zip.file('report.json',JSON.stringify(manifest));return zip.generateAsync({type:'uint8array',compression:'DEFLATE'});
 }
